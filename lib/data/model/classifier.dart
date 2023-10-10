@@ -3,10 +3,10 @@ import 'dart:ui';
 
 import 'package:image/image.dart' as image_lib;
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:tflite_flutter_helper/tflite_flutter_helper.dart';
 
 import 'package:flutter_yolov5_app/utils/logger.dart';
 import 'package:flutter_yolov5_app/data/entity/recognition.dart';
+import 'package:tflite_flutter_helper_plus/tflite_flutter_helper_plus.dart';
 
 class Classifier {
   Classifier({
@@ -17,10 +17,10 @@ class Classifier {
   late Interpreter? _interpreter;
   Interpreter? get interpreter => _interpreter;
 
-  static const String modelFileName = 'best-fp16.tflite';
+  static const String modelFileName = 'detect_tbs.tflite';
 
   /// image size into interpreter
-  static const int inputSize = 320;
+  static const int inputSize = 640;
 
   ImageProcessor? imageProcessor;
   late List<List<int>> _outputShapes;
@@ -65,7 +65,7 @@ class Classifier {
           ResizeOp(
             inputSize,
             inputSize,
-            ResizeMethod.BILINEAR,
+            ResizeMethod.bilinear,
           ),
         )
         .build();
@@ -85,7 +85,8 @@ class Classifier {
     for (var pixel in inputImage.tensorBuffer.getDoubleList()) {
       normalizedInputImage.add(pixel / 255.0);
     }
-    var normalizedTensorBuffer = TensorBuffer.createDynamic(TfLiteType.float32);
+    var normalizedTensorBuffer =
+        TensorBuffer.createDynamic(inputImage.getDataType());
     normalizedTensorBuffer
         .loadList(normalizedInputImage, shape: [inputSize, inputSize, 3]);
 
